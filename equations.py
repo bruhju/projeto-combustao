@@ -19,3 +19,14 @@ def D_ref (A_ref, D_int):
     D_ref = ( math.sqrt(((4 * A_ref)/math.pi) + math.pow(D_int,2)) - D_int ) / 2
     return D_ref
 
+def A_ft (A_ref):
+    A_ft = 0.56 * A_ref
+    return A_ft
+
+def D_ft (A_ft, D_int, D_ref):
+    D_ft = A_ft / ( math.pi * ( D_int + D_ref) )
+    return D_ft
+
+def phi_global (m_dot_comb, m_dot_3, phi_estq):
+    phi_global = ( m_dot_comb / m_dot_3 ) / phi_estq
+    return phi_global

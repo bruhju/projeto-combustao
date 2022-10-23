@@ -35,10 +35,13 @@ theta = 73000000
 D_int = 0.01717
 phi_zp = 1.05
 phi_zs = 8
+phi_estq = 0.06818
 b = 170*(2-math.log(phi_zp))
 
 perda_pressao_total =  0.06 #deltaP3-4/P3
 fator_perda_pressao = 20    #deltaP3-4/qRef
+
+# Determinação de parametros de operação
 
 A_ref_aero_EM = eq.A_ref_aerodinamico(R_ar, m3_EM, T3_EM, P3_EM, perda_pressao_total, fator_perda_pressao)
 A_ref_aero_MA = eq.A_ref_aerodinamico(R_ar, m3_MA, T3_MA, P3_MA, perda_pressao_total, fator_perda_pressao)
@@ -55,11 +58,52 @@ A_ref_quim_MA = eq.A_ref_quimico( m3_MA, T3_MA, P3_MA, theta, D_ref_aero_MA, b)
 A_ref_quim_CRU = eq.A_ref_quimico( m3_CRU, T3_CRU, P3_CRU, theta, D_ref_aero_CRU, b)
 A_ref_quim_IDLE = eq.A_ref_quimico( m3_IDLE, T3_IDLE, P3_IDLE, theta, D_ref_aero_IDLE, b)
 
-
 D_ref_quim_EM = eq.D_ref( A_ref_quim_EM, D_int)
 D_ref_quim_MA = eq.D_ref( A_ref_quim_MA, D_int)
 D_ref_quim_CRU = eq.D_ref( A_ref_quim_CRU, D_int)
 D_ref_quim_IDLE = eq.D_ref( A_ref_quim_IDLE, D_int)
+
+A_ft_aero_EM = eq.A_ft(A_ref_aero_EM)
+A_ft_aero_MA = eq.A_ft(A_ref_aero_MA)
+A_ft_aero_CRU = eq.A_ft(A_ref_aero_CRU)
+A_ft_aero_IDLE = eq.A_ft(A_ref_aero_IDLE)
+
+A_ft_quim_EM = eq.A_ft(A_ref_quim_EM)
+A_ft_quim_MA = eq.A_ft(A_ref_quim_MA)
+A_ft_quim_CRU = eq.A_ft(A_ref_quim_CRU)
+A_ft_quim_IDLE = eq.A_ft(A_ref_quim_IDLE)
+
+D_ft_aero_EM = eq.D_ft(A_ft_aero_EM, D_int, D_ref_aero_EM)
+D_ft_aero_MA = eq.D_ft(A_ft_aero_MA, D_int, D_ref_aero_MA)
+D_ft_aero_CRU = eq.D_ft(A_ft_aero_CRU, D_int, D_ref_aero_CRU)
+D_ft_aero_IDLE = eq.D_ft(A_ft_aero_IDLE, D_int, D_ref_aero_IDLE)
+
+D_ft_quim_EM = eq.D_ft(A_ft_quim_EM, D_int, D_ref_quim_EM)
+D_ft_quim_MA = eq.D_ft(A_ft_quim_MA, D_int, D_ref_quim_MA)
+D_ft_quim_CRU = eq.D_ft(A_ft_quim_CRU, D_int, D_ref_quim_CRU)
+D_ft_quim_IDLE = eq.D_ft(A_ft_quim_IDLE, D_int, D_ref_quim_IDLE)
+
+A_ref_maior = A_ref_quim_IDLE
+D_ref_maior = D_ref_quim_IDLE
+A_ft_maior = A_ft_quim_IDLE
+D_ft_maior = D_ft_quim_IDLE
+
+
+# Determinação dos comprimentos da camara
+
+l_zp = ( 3 / 4 ) * D_ft_maior
+l_zs = ( 1 / 2 ) * D_ft_maior
+l_zd = ( 3 / 2 ) * D_ft_maior
+l_cc = l_zp + l_zs + l_zd
+
+# Razões estequimetricas
+
+phi_global_EM = eq.phi_global( mComb_EM, m3_EM, phi_estq)
+phi_global_MA = eq.phi_global( mComb_MA, m3_MA, phi_estq)
+phi_global_CRU = eq.phi_global( mComb_CRU, m3_CRU, phi_estq)
+phi_global_IDLE = eq.phi_global( mComb_IDLE, m3_IDLE, phi_estq)
+
+
 
 
 
