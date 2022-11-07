@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 # the phases in the mixture.
 
 ct.suppress_thermo_warnings()
-T_range = [300, 400, 500, 600, 700, 800, 900, 1000, 1100]
+# T_range = [300, 400, 500, 600, 700, 800, 900, 1000, 1100]
+T_range = [814, 707, 1060, 343]
 P = ct.one_atm  # type: ignore
 
 # phases
@@ -44,7 +45,7 @@ for T in T_range:
         mix.P = P
 
         # equilibrate the mixture adiabatically at constant P
-        mix.equilibrate('HP', max_steps=1000)
+        mix.equilibrate('HP')
         tad[i] = mix.T
         xeq[:, i] = mix.species_moles
 
@@ -52,7 +53,7 @@ for T in T_range:
 
 
 plt.grid(True)
-plt.legend(loc='upper right', ncol=3)
+plt.legend(loc='upper right', ncol=2)
 plt.xlabel(r"Equivalence ratio, $\phi$")
 plt.xlim(0, 2.8)
 plt.xticks([0, 0.5, 1, 1.5, 2, 2.5, 2.8])
