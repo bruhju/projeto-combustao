@@ -37,6 +37,7 @@ phi_zp = 1.05
 phi_zs = 8
 phi_estq = 0.06818
 b = 170*(2-math.log(phi_zp))
+m_dot_zp = 0.245
 
 perda_pressao_total = 0.06  # deltaP3-4/P3
 fator_perda_pressao = 20  # deltaP3-4/qRef
@@ -120,3 +121,18 @@ phi_pobre_EM = eq.phi_pobre(T3_EM)
 phi_pobre_MA = eq.phi_pobre(T3_MA)
 phi_pobre_CRU = eq.phi_pobre(T3_CRU)
 phi_pobre_IDLE = eq.phi_pobre(T3_IDLE)
+
+
+# Continuando apenas com os dados do ponto de projeto MaximoEmpuxo
+
+difference_phis_rico = phi_global_MA/phi_rico_MA
+
+difference_phis_pobre = phi_global_MA/phi_pobre_MA
+
+# Definição da porcentagem de ar na zona primeira a partir dos criterios 1-3 pag 53
+air_zp_min = phi_global_MA/1.07  # 0.266
+air_zp_max = phi_global_MA/1.5  # 0.1898
+
+air_zp_per_cent = 0.24  # Valor intermediario
+
+phi_zp = eq.phi_zp(phi_global_MA, air_zp_per_cent)

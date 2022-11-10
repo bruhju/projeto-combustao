@@ -50,6 +50,6 @@ def phi_rico(T3):
     return phi_rico
 
 
-def phi_zp(phi_global, m_dot_zp, m_dot_3):
-    phi_zp = phi_global / (m_dot_zp/m_dot_3)
+def phi_zp(phi_global, air_zp_per_cent):
+    phi_zp = phi_global / air_zp_per_cent
     return phi_zp
