@@ -158,15 +158,12 @@ limit_equivalence_rico = phi_global_MA/phi_pobre_EM
 
 
 # Definição da porcentagem de ar na zona primeira a partir dos criterios 1-3 pag 53
-air_zp_min = phi_global_MA/1.07  # 0.266
-air_zp_max = phi_global_MA/1.5  # 0.1898
+air_zp_max = phi_global_EM/1.07  # 0.266
+air_zp_min = phi_global_EM/1.5  # 0.1898
 
-air_zp_percent = 0.24  # Valor intermediario
+air_zp_percent = 0.25  # Valor intermediario
 
-phi_zp = eq.phi_zp(phi_global_EM, air_zp_percent)  # 1.44172
+phi_zp = eq.phi_zp(phi_global_EM, air_zp_percent)  # 1.384
+print("🐍 File: projeto-combustao/main.py | Line: 169 | undefined ~ phi_zp", phi_zp)
 
 air_resfriamento_percent = (0.1*T3_EM) - 30  # 51.4
-
-air_zp_zs_percent = (phi_global_EM+phi_rico_EM)/0.8
-
-# Dimensionamento basico difusor
