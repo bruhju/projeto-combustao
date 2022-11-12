@@ -26,31 +26,8 @@ for i in range(len(phi)):
     jet_fuel.equilibrate("HP")
     T_complete1[i] = jet_fuel.T
 
-T_complete2 = np.zeros(phi.shape)
-for i in range(len(phi)):
-    jet_fuel.TP = 400, ct.one_atm
-    jet_fuel.set_equivalence_ratio(phi[i], "POSF10264", air)
-    jet_fuel.equilibrate("HP")
-    T_complete2[i] = jet_fuel.T
-
-T_complete3 = np.zeros(phi.shape)
-for i in range(len(phi)):
-    jet_fuel.TP = 500, ct.one_atm
-    jet_fuel.set_equivalence_ratio(phi[i], "POSF10264", air)
-    jet_fuel.equilibrate("HP")
-    T_complete3[i] = jet_fuel.T
-
-T_complete4 = np.zeros(phi.shape)
-for i in range(len(phi)):
-    jet_fuel.TP = 600, ct.one_atm
-    jet_fuel.set_equivalence_ratio(phi[i], "POSF10264", air)
-    jet_fuel.equilibrate("HP")
-    T_complete4[i] = jet_fuel.T
 
 plt.plot(phi, T_complete1, label="complete combustion", lw=2)
-plt.plot(phi, T_complete2, label="complete combustion")
-plt.plot(phi, T_complete3, label="complete combustion")
-plt.plot(phi, T_complete4, label="complete combustion")
 plt.grid(True)
 plt.xlabel(r"Equivalence ratio, $\phi$")
 plt.ylabel("Temperature [K]")

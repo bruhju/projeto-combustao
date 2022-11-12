@@ -41,12 +41,12 @@ def phi_global(m_dot_comb, m_dot_3, phi_estq):
 
 
 def phi_pobre(T3):
-    phi_pobre = 0.67 - 0.0004*T3
+    phi_pobre = 0.67 - (0.0004*T3)
     return phi_pobre
 
 
 def phi_rico(T3):
-    phi_rico = 1.82 + 0.0006*T3
+    phi_rico = 1.82 + (0.0006*T3)
     return phi_rico
 
 

@@ -1,9 +1,11 @@
-import sympy as sp
+import math
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import math
-import matplotlib.pyplot as plt
 import scipy as spy
+import sympy as sp
+
 import equations as eq
 
 P3_EM = 2000000  # MPA
@@ -92,11 +94,24 @@ D_ft_quim_MA = eq.D_ft(A_ft_quim_MA, D_int, D_ref_quim_MA)
 D_ft_quim_CRU = eq.D_ft(A_ft_quim_CRU, D_int, D_ref_quim_CRU)
 D_ft_quim_IDLE = eq.D_ft(A_ft_quim_IDLE, D_int, D_ref_quim_IDLE)
 
+areasDF = pd.DataFrame({'Aref Aero': [A_ref_aero_EM, A_ref_aero_MA, A_ref_aero_CRU, A_ref_aero_IDLE],
+                       'Aref Quim': [A_ref_quim_EM, A_ref_quim_MA, A_ref_quim_CRU, A_ref_quim_IDLE],
+                        'Dref Aero': [D_ref_aero_EM, D_ref_aero_MA, D_ref_aero_CRU, D_ref_aero_IDLE],
+                        'Dref Quim': [D_ref_quim_EM, D_ref_quim_MA, D_ref_quim_CRU, D_ref_quim_IDLE],
+                        'Aft Aero': [A_ft_aero_EM, A_ft_aero_MA, A_ft_aero_CRU, A_ft_aero_IDLE],
+                        'Aft Quim': [A_ft_quim_EM, A_ft_quim_MA, A_ft_quim_CRU, A_ft_quim_IDLE],
+                        'Dft Aero': [D_ft_aero_EM, D_ft_aero_MA, D_ft_aero_CRU, D_ft_aero_IDLE],
+                        'Dft Quim': [D_ft_quim_EM, D_ft_quim_MA, D_ft_quim_CRU, D_ft_quim_IDLE],
+                        })
+areasDF.index = ['Expuxo Maximo', "Maxima Altitude", "Cruzeiro", "IDLE"]
+print('\n', areasDF, '\n')
+
 A_ref_maior = A_ref_quim_IDLE
 D_ref_maior = D_ref_quim_IDLE
 A_ft_maior = A_ft_quim_IDLE
 D_ft_maior = D_ft_quim_IDLE
 
+print(f'A_ref: {A_ref_maior:.4f} \nD_ref: {D_ref_maior:.4f}\nA_ft:  {A_ft_maior:.4f}\nD_ft:  {D_ft_maior:.4f}')
 
 # Determinação dos comprimentos da camara
 
@@ -104,6 +119,11 @@ l_zp = (3 / 4) * D_ft_maior
 l_zs = (1 / 2) * D_ft_maior
 l_zd = (3 / 2) * D_ft_maior
 l_cc = l_zp + l_zs + l_zd
+
+comprimentosDF = pd.DataFrame({'Comprimentos': [l_zp, l_zs, l_zd, l_cc]})
+comprimentosDF.index = ['Zona Primaria',
+                        "Zona Secundaria", "Zona Diluicao", "CC"]
+print('\n', comprimentosDF, '\n')
 
 # Razões estequimetricas
 
@@ -122,17 +142,31 @@ phi_pobre_MA = eq.phi_pobre(T3_MA)
 phi_pobre_CRU = eq.phi_pobre(T3_CRU)
 phi_pobre_IDLE = eq.phi_pobre(T3_IDLE)
 
+phisDF = pd.DataFrame(
+    {'phi_pobre': [phi_pobre_EM, phi_pobre_MA, phi_pobre_CRU, phi_pobre_IDLE],
+     'phi_rico': [phi_rico_EM, phi_rico_MA, phi_rico_CRU, phi_rico_IDLE],
+     'phi_global': [phi_global_EM, phi_global_MA, phi_global_CRU,  phi_global_IDLE]
+     })
+phisDF.index = ['Expuxo Maximo', "Maxima Altitude", "Cruzeiro", "IDLE"]
+print('\n', phisDF, '\n')
 
 # Continuando apenas com os dados do ponto de projeto MaximoEmpuxo
 
-difference_phis_rico = phi_global_MA/phi_rico_MA
+limit_equivalence_pobre = phi_global_MA/phi_rico_EM
 
-difference_phis_pobre = phi_global_MA/phi_pobre_MA
+limit_equivalence_rico = phi_global_MA/phi_pobre_EM
+
 
 # Definição da porcentagem de ar na zona primeira a partir dos criterios 1-3 pag 53
 air_zp_min = phi_global_MA/1.07  # 0.266
 air_zp_max = phi_global_MA/1.5  # 0.1898
 
-air_zp_per_cent = 0.24  # Valor intermediario
+air_zp_percent = 0.24  # Valor intermediario
 
-phi_zp = eq.phi_zp(phi_global_MA, air_zp_per_cent)
+phi_zp = eq.phi_zp(phi_global_EM, air_zp_percent)  # 1.44172
+
+air_resfriamento_percent = (0.1*T3_EM) - 30  # 51.4
+
+air_zp_zs_percent = (phi_global_EM+phi_rico_EM)/0.8
+
+# Dimensionamento basico difusor
