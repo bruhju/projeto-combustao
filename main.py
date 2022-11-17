@@ -34,8 +34,8 @@ mComb_IDLE = 0.0091  # kg/s
 
 R_ar = 143.5  # J/kg*K
 theta = 73000000
-D_int = 0.01717
-phi_zp = 1.05
+D_int = 0.05
+phi_zp = 1.05  # deprecated
 phi_zs = 8
 phi_estq = 0.06818
 b = 170*(2-math.log(phi_zp))
@@ -43,6 +43,76 @@ m_dot_zp = 0.245
 
 perda_pressao_total = 0.06  # deltaP3-4/P3
 fator_perda_pressao = 20  # deltaP3-4/qRef
+
+# Razões estequimetricas
+
+phi_global_EM = eq.phi_global(mComb_EM, m3_EM, phi_estq)
+phi_global_MA = eq.phi_global(mComb_MA, m3_MA, phi_estq)
+phi_global_CRU = eq.phi_global(mComb_CRU, m3_CRU, phi_estq)
+phi_global_IDLE = eq.phi_global(mComb_IDLE, m3_IDLE, phi_estq)
+
+phi_rico_EM = eq.phi_rico(T3_EM)
+phi_rico_MA = eq.phi_rico(T3_MA)
+phi_rico_CRU = eq.phi_rico(T3_CRU)
+phi_rico_IDLE = eq.phi_rico(T3_IDLE)
+
+phi_pobre_EM = eq.phi_pobre(T3_EM)
+phi_pobre_MA = eq.phi_pobre(T3_MA)
+phi_pobre_CRU = eq.phi_pobre(T3_CRU)
+phi_pobre_IDLE = eq.phi_pobre(T3_IDLE)
+
+phisDF = pd.DataFrame(
+    {'phi_pobre': [phi_pobre_EM, phi_pobre_MA, phi_pobre_CRU, phi_pobre_IDLE],
+     'phi_rico': [phi_rico_EM, phi_rico_MA, phi_rico_CRU, phi_rico_IDLE],
+     'phi_global': [phi_global_EM, phi_global_MA, phi_global_CRU,  phi_global_IDLE]
+     })
+phisDF.index = ['Expuxo Maximo', "Maxima Altitude", "Cruzeiro", "IDLE"]
+print('\n', phisDF, '\n')
+
+
+# Limites de equivalencias pobre/rico
+
+limit_equivalence_pobre_EM = phi_global_EM/phi_pobre_EM
+limit_equivalence_pobre_MA = phi_global_MA/phi_pobre_MA
+limit_equivalence_pobre_CRU = phi_global_CRU/phi_pobre_CRU
+limit_equivalence_pobre_IDLE = phi_global_IDLE/phi_pobre_IDLE
+
+limit_equivalence_rico_EM = phi_global_EM/phi_rico_EM
+limit_equivalence_rico_MA = phi_global_MA/phi_rico_MA
+limit_equivalence_rico_CRU = phi_global_CRU/phi_rico_CRU
+limit_equivalence_rico_IDLE = phi_global_IDLE/phi_rico_IDLE
+
+limitEquivalenceDF = pd.DataFrame(
+    {'limit_equivalence_pobre': [limit_equivalence_pobre_EM, limit_equivalence_pobre_MA, limit_equivalence_pobre_CRU, limit_equivalence_pobre_IDLE],
+     'limit_equivalence_rico': [limit_equivalence_rico_EM, limit_equivalence_rico_MA, limit_equivalence_rico_CRU, limit_equivalence_rico_IDLE]
+     })
+limitEquivalenceDF.index = ['Expuxo Maximo',
+                            "Maxima Altitude", "Cruzeiro", "IDLE"]
+print('\n', limitEquivalenceDF, '\n')
+
+
+# Definição da porcentagem de ar na zona primeira a partir dos criterios 1-3 pag 53
+air_zp_max = phi_global_EM/1.05  # 0.266
+air_zp_min = phi_global_EM/1.5  # 0.1898
+
+air_zp_percent = 0.25  # Valor intermediario
+
+phi_zp_EM = eq.phi_zp(phi_global_EM, air_zp_percent)  # 1.384
+phi_zp_MA = eq.phi_zp(phi_global_MA, air_zp_percent)  # 1.384
+phi_zp_CRU = eq.phi_zp(phi_global_CRU, air_zp_percent)  # 1.384
+phi_zp_IDLE = eq.phi_zp(phi_global_IDLE, air_zp_percent)  # 1.384
+
+phiZPDF = pd.DataFrame(
+    {'phi_zp': [phi_zp_EM, phi_zp_MA, phi_zp_CRU, phi_zp_IDLE],
+     })
+phiZPDF.index = ['Expuxo Maximo',
+                 "Maxima Altitude", "Cruzeiro", "IDLE"]
+print('\n', phiZPDF, '\n')
+
+
+# Determinado o maior phi_zp das iterações
+phi_zp = phi_zp_EM
+
 
 # Determinação de parametros de operação
 
@@ -125,45 +195,8 @@ comprimentosDF.index = ['Zona Primaria',
                         "Zona Secundaria", "Zona Diluicao", "CC"]
 print('\n', comprimentosDF, '\n')
 
-# Razões estequimetricas
-
-phi_global_EM = eq.phi_global(mComb_EM, m3_EM, phi_estq)
-phi_global_MA = eq.phi_global(mComb_MA, m3_MA, phi_estq)
-phi_global_CRU = eq.phi_global(mComb_CRU, m3_CRU, phi_estq)
-phi_global_IDLE = eq.phi_global(mComb_IDLE, m3_IDLE, phi_estq)
-
-phi_rico_EM = eq.phi_rico(T3_EM)
-phi_rico_MA = eq.phi_rico(T3_MA)
-phi_rico_CRU = eq.phi_rico(T3_CRU)
-phi_rico_IDLE = eq.phi_rico(T3_IDLE)
-
-phi_pobre_EM = eq.phi_pobre(T3_EM)
-phi_pobre_MA = eq.phi_pobre(T3_MA)
-phi_pobre_CRU = eq.phi_pobre(T3_CRU)
-phi_pobre_IDLE = eq.phi_pobre(T3_IDLE)
-
-phisDF = pd.DataFrame(
-    {'phi_pobre': [phi_pobre_EM, phi_pobre_MA, phi_pobre_CRU, phi_pobre_IDLE],
-     'phi_rico': [phi_rico_EM, phi_rico_MA, phi_rico_CRU, phi_rico_IDLE],
-     'phi_global': [phi_global_EM, phi_global_MA, phi_global_CRU,  phi_global_IDLE]
-     })
-phisDF.index = ['Expuxo Maximo', "Maxima Altitude", "Cruzeiro", "IDLE"]
-print('\n', phisDF, '\n')
 
 # Continuando apenas com os dados do ponto de projeto MaximoEmpuxo
 
-limit_equivalence_pobre = phi_global_MA/phi_rico_EM
-
-limit_equivalence_rico = phi_global_MA/phi_pobre_EM
-
-
-# Definição da porcentagem de ar na zona primeira a partir dos criterios 1-3 pag 53
-air_zp_max = phi_global_EM/1.07  # 0.266
-air_zp_min = phi_global_EM/1.5  # 0.1898
-
-air_zp_percent = 0.25  # Valor intermediario
-
-phi_zp = eq.phi_zp(phi_global_EM, air_zp_percent)  # 1.384
-print("🐍 File: projeto-combustao/main.py | Line: 169 | undefined ~ phi_zp", phi_zp)
-
-air_resfriamento_percent = (0.1*T3_EM) - 30  # 51.4
+# Porcentagem de Ar apra resfriamento deve dar em torno de 50%
+air_resfriamento_percent = (0.1*T3_EM) - 30  # 51.4%

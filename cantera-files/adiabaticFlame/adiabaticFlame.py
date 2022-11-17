@@ -20,7 +20,7 @@ for T in T_range:
 
         gas.equilibrate('HP',  'auto')
 
-        tad[i] = gas.T
+        tad[i] = gas.T - T
 
     plt.plot(phi, tad, label=(f'{T} K'))
     # plt.plot(phi, tad, label=(f'{T} K'))
@@ -28,10 +28,16 @@ for T in T_range:
 
 plt.grid(True)
 plt.legend(loc='upper right', ncol=2)
-# plt.hlines(y=1600, xmin=0, xmax=3, colors='black')
-# plt.hlines(y=540, xmin=0, xmax=3, colors='black')
+plt.hlines(y=1054, xmin=0, xmax=3, colors='black')
+plt.hlines(y=786, xmin=0, xmax=3, colors='black')
 
-# plt.vlines(x=0.344, ymin=0, ymax=2100, colors='black')
+plt.vlines(x=0.331, ymin=0, ymax=2100, colors='black')
+plt.vlines(x=2.86, ymin=0, ymax=2100, colors='black')
+
+plt.vlines(x=0.387, ymin=0, ymax=2100, colors='black')
+plt.vlines(x=0.246, ymin=0, ymax=2100, colors='black')
+plt.vlines(x=0.5328, ymin=0, ymax=2100, colors='black')
+
 # plt.vlines(x=2.3, ymin=0, ymax=2100, colors='black')
 
 # plt.ylim(0, 2100)
