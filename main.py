@@ -156,11 +156,10 @@ D_ft_quim_IDLE = eq.D_ft(A_ft_quim_IDLE, D_int, D_ref_quim_IDLE)
 #                      D_ft_aero_EM, D_ft_aero_MA, D_ft_aero_CRU, D_ft_aero_IDLE,
 #                      D_ft_quim_EM, D_ft_quim_MA, D_ft_quim_CRU, D_ft_quim_IDLE)
 
-
-A_ref_maior = A_ref_quim_IDLE
-D_ref_maior = D_ref_quim_IDLE
-A_ft_maior = A_ft_quim_IDLE
-D_ft_maior = D_ft_quim_IDLE
+A_ref_maior = 0.1693
+D_ref_maior = 0.2085
+A_ft_maior = 0.1185
+D_ft_maior = 0.1460
 
 # print(f'A_ref: {A_ref_maior:.4f} \nD_ref: {D_ref_maior:.4f}\nA_ft:  {A_ft_maior:.4f}\nD_ft:  {D_ft_maior:.4f}')
 
@@ -233,6 +232,7 @@ print("Temp saida ZP", T_out_zp)
 Tin_zs = T_out_zp
 n_zs = 1/phi_zs
 v_zs = A_ft_maior*l_zs
+# Valor de 1557.98 T encontrado através do gráfico gerado pelo cantera, referente a interssecao com phi_zs
 delta_T_zs = 1557.98
 deltaP = P3_EM*0.06  # Retirado da igualdade deltaP34/P3 = 6%
 eta_zs = eq.eta_zs(T3_EM, P3_EM, phi_zs, mComb_EM, v_zs, deltaP)
@@ -241,6 +241,7 @@ print("Temp saida ZS", T_out_zs)
 
 #  ZONA DILUICAO
 v_zd = A_ft_maior*l_zd
+# Valor de  812.7 T encontrado através do gráfico gerado pelo cantera, referente a interssecao com phi_global
 delta_T_zd = 812.7
 deltaP = P3_EM*0.06  # Retirado da igualdade deltaP34/P3 = 6%
 eta_zd = eq.eta_zs(T3_EM, P3_EM, phi_zd, mComb_EM, v_zd, deltaP)
