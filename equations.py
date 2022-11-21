@@ -56,12 +56,12 @@ def phi_zp(phi_global, air_zp_per_cent):
 
 
 def eta_zr(T3, P3):
-    eta_zr = 0.83 + (0.17*np.tanh(1.5475*0.001*(T3 + 108*np.log(P3) - 1863)))
+    eta_zr = 0.56 + (0.44*np.tanh(1.5475*0.001*(T3 + (108*np.log(P3)) - 1863)))
     return eta_zr
 
 
 def eta_zp(T3, P3):
-    eta_zp = 0.92 + (0.12*np.tanh(1.5475*0.001*(T3 + 108*np.log(P3) - 1863)))
+    eta_zp = 0.71 + (0.29*np.tanh(1.5475*0.001*(T3 + (108*np.log(P3)) - 1863)))
     return eta_zp
 
 
@@ -79,26 +79,26 @@ def D_asterisco(P3, deltaP):
 def eta_zs(T3, P3, phi_zs, m_dot_comb, v_zs, deltaP):
     eta_zs = 1/(10**10**(0.911*np.log(psi_T3(T3, P3, phi_zs, m_dot_comb, v_zs)) +
                 8.02*phi_zs - 1.097 + D_asterisco(P3, deltaP)))
-    return eta_zp
+    eta_zs = 0.71 + (0.29)
+
+    return eta_zs
 
 
-def tg_1(T_med_zr):
-    Tg1_calculo = T_med_zr
-    return Tg1_calculo
+def tg_zr(T_med_zr):
+    tg_zr = T_med_zr
+    return tg_zr
 
 
-def tg_2(T_med_zr, T_saida_zp, L_zp, L_zr, x):
-    Tg2_calculo = T_med_zr + \
-        ((T_saida_zp - T_med_zr)/(L_zp - L_zr) * (x - L_zr))
-    return Tg2_calculo
+def tg_zp(T_out_zp, l_zp, T3, x):
+    tg_zp = ((T_out_zp - T3) * x)/(l_zp+T3)
+    return tg_zp
 
 
-def tg_3(T_saida_zp, T_saida_zs, L_zs, L_zp, x):
-    Tg3_calculo = T_saida_zp + ((T_saida_zs - T_saida_zp)/L_zs)*(x-L_zp)
-    return Tg3_calculo
+def tg_zs(T_out_zp, T_out_zs, l_zs, l_zp, x):
+    tg_zs = (((T_out_zs - T_out_zp) * x)/(l_zp+l_zs))+T_out_zp
+    return tg_zs
 
 
-def tg_4(T_saida_zs, T_saida_zd, L_dz, x, L_zp, L_zs):
-    Tg3_calculo = T_saida_zs + \
-        ((T_saida_zd - T_saida_zs) / L_dz * (x - L_zp - L_zs))
-    return Tg3_calculo
+def tg_zd(T_out_zs, T_out_zd, l_zd, l_cc, x):
+    tg_zd = ((T_out_zd - T_out_zs)*x)/(l_cc + T_out_zs)
+    return tg_zd

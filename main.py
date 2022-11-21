@@ -2,7 +2,7 @@ import math
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import make_interp_spline, BSpline
+from scipy.ndimage import gaussian_filter1d
 import sympy as sp
 
 import equations as eq
@@ -34,6 +34,7 @@ T4_IDLE = 703  # K
 mComb_IDLE = 0.0091  # kg/s
 
 R_ar = 143.5  # J/kg*K
+R_ar2 = 287  # J/kg*K
 theta = 73000000
 D_int = 0.05
 phi_zp = 1.05  # deprecated
@@ -171,7 +172,72 @@ l_zs = (1 / 2) * D_ft_maior
 l_zd = (3 / 2) * D_ft_maior
 l_cc = l_zp + l_zs + l_zd
 
-# printer.print_comprimentos(l_zp, l_zs, l_zd, l_cc)
+printer.print_comprimentos(l_zp, l_zs, l_zd, l_cc)
+
+# Calculos difusor
+
+# Eq. 26
+A3 = 0.096 / 1  # saida do compressor/número de combustores anular(1)
+
+# eq. 22
+V3 = (m3_EM * T3_EM * R_ar2)/(A3 * P3_EM)
+print('Velocidade de entrada: ', V3)
+
+# condicional
+if V3 < 150:
+    print("Não é necessário difusor porque a velocidade de entrada do ar não é superior a 75 m/s")
+
+
+# CÁLCULOS TURBILHONADOR
+
+# Eq. professor - nmr injetores
+N_inj = round(math.pi * (D_int+D_ref_maior)/D_ft_maior)
+
+# Eq. qtd pás (10 por injetor)
+N_pas = N_inj * 10
+
+# Eq. 31
+D_sw = l_zr / 2
+
+# Eq. 32 - para 5% do total no turbilhonador
+m_dot_sw = 0.05 * m3_EM
+m_dot_zr = 3 * m_dot_sw
+
+# Eq. 36
+A0 = m3_EM * (A_ref_maior - A_ft_maior) / (m3_EM - (0.5*m_dot_zp))  # Eq. 24
+perda_pressao_entrada = 0.25*math.pow((A_ref_maior/A0), 2)  # Eq. 39
+perda_pressao_difusor = 0
+perda_pressao_turbilhonador = fator_perda_pressao - \
+    perda_pressao_entrada - perda_pressao_difusor
+
+# eq. 35 - ângulo de 55°
+K_sw = 1.3
+sec_2_Bsw = 3.0396
+A_sw = sec_2_Bsw * ((K_sw*math.pow(m_dot_sw, 2)*math.pow(A_ref_maior, 2)) /
+                    (perda_pressao_turbilhonador*math.pow(m3_EM, 2))+math.pow(A_ft_maior, 2))
+
+A_sw_corrigido = A_sw*1.5
+
+# eq. 41 - 10%
+D_at = 0.1 * D_ref_maior
+R_at = D_at/2
+
+# eq.
+
+print('O número de injetores é             ', N_inj)
+print('O número de pás é                   ', N_pas)
+print('O comprimento da ZR é               ', l_zr)
+print('O diâmetro do turbilhonador é       ', D_sw)
+print('A vazão massica do turbilhonador é  ', m_dot_sw)
+print('A vazão massica da ZR é             ', m_dot_zr)
+print('A área do turbilhonador é           ', A_sw)
+print('A área corrigida do turbilhonador é ', A_sw_corrigido)
+print('O diâmetro do atomizador é          ', D_at)
+print('Relação diâmetro turbilhonador e diâmetro tubo de chama é ',
+      D_sw/D_ft_maior*100, '%')
+
+
+# A velocidade de entrada do ar na camara nao deve ultrapassar 75 m/s para que a combustao seja estavel numa grande faixa de razoes ar/combustivel
 
 
 # Continuando apenas com os dados do ponto de projeto MaximoEmpuxo
@@ -248,29 +314,43 @@ eta_zd = eq.eta_zs(T3_EM, P3_EM, phi_zd, mComb_EM, v_zd, deltaP)
 T_out_zd = T4_EM
 print("Temp saida ZD", T_out_zd)
 
-x_t = np.linspace(1e-4, l_zp+l_zs+l_zd, 100)
+x_t = np.linspace(1e-4, l_zp+l_zs+l_zd, 50)
 Tg = np.zeros(len(x_t))
 index = 0
 
+# Versão professor
 for i in x_t:
     if i >= 0 and i <= l_zr:
         Tg_1 = T_med_zr
         Tg[index] = Tg_1
     if i > l_zr and i <= l_zp:
-        Tg_2 = T_med_zr + ((T_out_zp-T_med_zr)/(l_zp-l_zr))*(i-l_zr)
+        Tg_2 = (((T_out_zp - T3_EM) * i)/l_zp)+T3_EM
         Tg[index] = Tg_2
     if i > l_zp and i <= l_zp+l_zs:
-        Tg_3 = T_out_zp + ((T_out_zs - T_out_zp)/l_zs)*(i-l_zp)
+        Tg_3 = (((T_out_zs - T_out_zp) * i)/(l_zp+l_zs))+T_out_zp
         Tg[index] = Tg_3
     if i > l_zp+l_zs and i <= l_zp+l_zs+l_zd:
-        Tg_4 = T_out_zs + ((T_out_zd - T_out_zs)/l_zd)*(i - l_zp - l_zs)
+        Tg_4 = (((T_out_zd - T_out_zs)*i)/l_cc) + T_out_zs
         Tg[index] = Tg_4
     index = index + 1
 
+
+y_smoothed = gaussian_filter1d(Tg, sigma=2)
+
 plt.figure(2, figsize=(12, 7), dpi=80)
-plt.plot(x_t, Tg, 'r')
+plt.plot(x_t, y_smoothed, 'r')
+
 plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
 plt.grid()
+plt.vlines(l_zr, 1000, 2900, colors='b', linestyles='--',
+           label='Limite Zona de Recirculação')
+plt.vlines((l_zp), 1000, 2900, colors='g',
+           linestyles='--', label='Limite Zona Primária')
+plt.vlines((l_zp+l_zs), 1000, 2900, colors='r',
+           linestyles='--', label='Limite Zona Secundária')
+plt.vlines((l_zp+l_zs+l_zd), 1000, 2900, colors='m',
+           linestyles='--', label='Limite Zona de Diluição')
+plt.ylim(1000, 2900)
 plt.ylabel('Temperatura (K)')
 plt.xlabel('Distância da face do tubo de chama (mm)')
 plt.legend()
