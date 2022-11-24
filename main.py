@@ -398,14 +398,16 @@ m_an_smoothed = gaussian_filter1d(m_an, sigma=2)
 
 plt.figure(2, figsize=(12, 7), dpi=80)
 plt.plot(x_t, mg_smoothed, 'r')
+
+plt.plot(x_t, m_an_smoothed, 'r')
 plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-plt.vlines(l_zr, 0, 6, colors='b', linestyles='--',
+plt.vlines(l_zr, 0, 18, colors='b', linestyles='--',
            label='Limite Zona de Recirculação')
-plt.vlines((l_zp), 0, 6, colors='g',
+plt.vlines((l_zp), 0, 18, colors='g',
            linestyles='--', label='Limite Zona Primária')
-plt.vlines((l_zp+l_zs), 0, 6, colors='r',
+plt.vlines((l_zp+l_zs), 0, 18, colors='r',
            linestyles='--', label='Limite Zona Secundária')
-plt.vlines((l_cc), 0, 6, colors='m',
+plt.vlines((l_cc), 0, 18, colors='m',
            linestyles='--', label='Limite Zona de Diluição')
 plt.grid()
 plt.ylabel('Fluxo de Massa [kg/s]')
@@ -482,12 +484,12 @@ for i in range(50):
 
 Tw_in_smoothed = gaussian_filter1d(Tw_in, sigma=2)
 
-# plt.figure(2, figsize=(12, 7), dpi=80)
-# plt.plot(x_t, Tg_smoothed, 'b')
-# plt.plot(x_t, Tw_in_smoothed, 'r')
-# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-# plt.grid()
-# plt.ylabel('Temperatura (K)')
-# plt.xlabel('Distância da face do tubo de chama (mm)')
-# plt.legend()
-# plt.show()
+plt.figure(2, figsize=(12, 7), dpi=80)
+plt.plot(x_t, Tg_smoothed, 'b')
+plt.plot(x_t, Tw_in_smoothed, 'r')
+plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+plt.grid()
+plt.ylabel('Temperatura (K)')
+plt.xlabel('Distância da face do tubo de chama (mm)')
+plt.legend()
+plt.show()

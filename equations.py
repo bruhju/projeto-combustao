@@ -118,5 +118,5 @@ def mg_zs(m_dot_zs, mg_zp, l_zp, l_zs, i):
 
 
 def mg_zd(mg_zs, m_dot_zd, l_zp, l_zs, l_zd, i):
-    mg_zd = mg_zs + (m_dot_zd-mg_zs)*(i-(l_zp+l_zs)/l_zd)
+    mg_zd = mg_zs + (((m_dot_zd-mg_zs)*(i-(l_zp+l_zs)))/l_zd)
     return mg_zd
