@@ -41,7 +41,7 @@ phi_zp = 1.05  # deprecated
 phi_zs = 8
 phi_estq = 0.06818
 b = 170*(2-math.log(phi_zp))
-m_dot_zp = 0.245
+m_dot_zp = 0.238578
 
 perda_pressao_total = 0.06  # deltaP3-4/P3
 fator_perda_pressao = 20  # deltaP3-4/qRef
@@ -157,12 +157,12 @@ D_ft_quim_IDLE = eq.D_ft(A_ft_quim_IDLE, D_int, D_ref_quim_IDLE)
 #                      D_ft_aero_EM, D_ft_aero_MA, D_ft_aero_CRU, D_ft_aero_IDLE,
 #                      D_ft_quim_EM, D_ft_quim_MA, D_ft_quim_CRU, D_ft_quim_IDLE)
 
-A_ref_maior = 0.1693
-D_ref_maior = 0.2085
-A_ft_maior = 0.1185
-D_ft_maior = 0.1460
+A_ref_maior = 0.05890
+D_ref_maior = 0.1142
+A_ft_maior = A_ref_maior * 0.7
+D_ft_maior = 0.0799
 
-# print(f'A_ref: {A_ref_maior:.4f} \nD_ref: {D_ref_maior:.4f}\nA_ft:  {A_ft_maior:.4f}\nD_ft:  {D_ft_maior:.4f}')
+print(f'A_ref: {A_ref_maior:.4f} \nD_ref: {D_ref_maior:.4f}\nA_ft:  {A_ft_maior:.4f}\nD_ft:  {D_ft_maior:.4f}')
 
 # Determinação dos comprimentos da camara
 
@@ -171,6 +171,7 @@ l_zp = (3 / 4) * D_ft_maior
 l_zs = (1 / 2) * D_ft_maior
 l_zd = (3 / 2) * D_ft_maior
 l_cc = l_zp + l_zs + l_zd
+
 
 printer.print_comprimentos(l_zp, l_zs, l_zd, l_cc)
 
@@ -255,7 +256,7 @@ m_dot_zp = air_zp_percent*m3_EM
 
 # Fluxo de ar na zona secundaria
 phi_zs = 0.8  # definido pela literatura
-air_zs_percent = (phi_global_EM/phi_zs) - air_zp_percent
+air_zs_percent = (phi_global_EM/phi_zs)
 m_dot_zs = air_zs_percent*m3_EM
 
 
@@ -264,7 +265,9 @@ m_dot_zs = air_zs_percent*m3_EM
 air_zd_percent = 1 - (air_zp_percent + air_zs_percent +
                       air_arrefecimento_percent)
 
-phi_zd = phi_global_EM / air_zd_percent
+phi_zd = phi_global_EM
+
+air_zd_percent = 1
 
 m_dot_zd = air_zd_percent*m3_EM
 
@@ -275,6 +278,7 @@ massasDF.index = ['Zona Primaria', "Zona Secundaria",
 print('\n', massasDF, '\n')
 
 bal_massa = m3_EM - (m_dot_zp + m_dot_zs + m_dot_zd + m_dot_arref)
+print("🐍 File: projeto-combustao/main.py | Line: 279 | undefined ~ bal_massa", bal_massa)
 
 # ZONA RECIRCULACAO
 T_in_zr = T3_EM  # Temperatura de Entrada na ZR
@@ -314,44 +318,176 @@ eta_zd = eq.eta_zs(T3_EM, P3_EM, phi_zd, mComb_EM, v_zd, deltaP)
 T_out_zd = T4_EM
 print("Temp saida ZD", T_out_zd)
 
-x_t = np.linspace(1e-4, l_zp+l_zs+l_zd, 50)
+x_t = np.linspace(1e-4, l_cc, 100)
 Tg = np.zeros(len(x_t))
 index = 0
 
 # Versão professor
 for i in x_t:
     if i >= 0 and i <= l_zr:
-        Tg_1 = T_med_zr
+        Tg_1 = eq.tg_zr(T_med_zr)
         Tg[index] = Tg_1
+
     if i > l_zr and i <= l_zp:
-        Tg_2 = (((T_out_zp - T3_EM) * i)/l_zp)+T3_EM
+        Tg_2 = eq.tg_zp(T_out_zp, l_zp, T3_EM, i)
         Tg[index] = Tg_2
+
     if i > l_zp and i <= l_zp+l_zs:
-        Tg_3 = (((T_out_zs - T_out_zp) * i)/(l_zp+l_zs))+T_out_zp
+        Tg_3 = eq.tg_zs(T_out_zp, T_out_zs, l_zs, l_zp, i)
         Tg[index] = Tg_3
+
     if i > l_zp+l_zs and i <= l_zp+l_zs+l_zd:
-        Tg_4 = (((T_out_zd - T_out_zs)*i)/l_cc) + T_out_zs
+        Tg_4 = eq.tg_zd(T_out_zs, T_out_zd, l_zd, l_cc, i)
         Tg[index] = Tg_4
+
     index = index + 1
 
 
-y_smoothed = gaussian_filter1d(Tg, sigma=2)
+Tg_smoothed = gaussian_filter1d(Tg, sigma=2)
+
+# plt.figure(2, figsize=(12, 7), dpi=80)
+# plt.plot(x_t, Tg_smoothed, 'r')
+# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+# plt.grid()
+# plt.vlines(l_zr, 1000, 2900, colors='b', linestyles='--',
+#            label='Limite Zona de Recirculação')
+# plt.vlines((l_zp), 1000, 2900, colors='g',
+#            linestyles='--', label='Limite Zona Primária')
+# plt.vlines((l_zp+l_zs), 1000, 2900, colors='r',
+#            linestyles='--', label='Limite Zona Secundária')
+# plt.vlines((l_cc), 1000, 2900, colors='m' l_zp+l_zs+l_zd, ,
+#            linestyles='--', label='Limite Zona de Diluição')
+# plt.ylim(1000, 2900)
+# plt.ylabel('Temperatura (K)')
+# plt.xlabel('Distância da face do tubo de chama (mm)')
+# plt.legend()
+# plt.show()
+
+mg = np.zeros(len(x_t))
+m_an = np.zeros(len(x_t))
+index = 0
+
+
+for i in x_t:
+    if i >= 0 and i <= l_zr:
+        mg_zr = eq.mg_zr(m_dot_zp)
+        mg[index] = mg_zr
+        m_an[index] = m3_EM - mg_zr
+
+    if i > l_zr and i <= l_zp:
+        mg_zp = eq.mg_zp(mg_zr, m_dot_zp, l_zp, l_zr, i)
+        mg[index] = mg_zp
+        m_an[index] = m3_EM - mg_zp
+
+    if i > l_zp and i <= l_zp+l_zs:
+        mg_zs = eq.mg_zs(m_dot_zs, mg_zp, l_zp, l_zs, i)
+        print("🐍 File: projeto-combustao/main.py | Line: 381 | undefined ~ mg_zp, mg_zs", mg_zp, " ", mg_zs)
+        mg[index] = mg_zs
+        m_an[index] = m3_EM - mg_zs
+
+    if i > l_zp+l_zs and i <= l_zp+l_zs+l_zd:
+        mg_zd = eq.mg_zd(mg_zs, m_dot_zd, l_zp, l_zs, l_zd, i)
+        mg[index] = mg_zd
+        m_an[index] = m3_EM - mg_zd
+
+    index = index + 1
+
+mg_smoothed = gaussian_filter1d(mg, sigma=1)
+m_an_smoothed = gaussian_filter1d(m_an, sigma=2)
+
 
 plt.figure(2, figsize=(12, 7), dpi=80)
-plt.plot(x_t, y_smoothed, 'r')
-
+plt.plot(x_t, mg_smoothed, 'r')
 plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-plt.grid()
-plt.vlines(l_zr, 1000, 2900, colors='b', linestyles='--',
+plt.vlines(l_zr, 0, 6, colors='b', linestyles='--',
            label='Limite Zona de Recirculação')
-plt.vlines((l_zp), 1000, 2900, colors='g',
+plt.vlines((l_zp), 0, 6, colors='g',
            linestyles='--', label='Limite Zona Primária')
-plt.vlines((l_zp+l_zs), 1000, 2900, colors='r',
+plt.vlines((l_zp+l_zs), 0, 6, colors='r',
            linestyles='--', label='Limite Zona Secundária')
-plt.vlines((l_zp+l_zs+l_zd), 1000, 2900, colors='m',
+plt.vlines((l_cc), 0, 6, colors='m',
            linestyles='--', label='Limite Zona de Diluição')
-plt.ylim(1000, 2900)
-plt.ylabel('Temperatura (K)')
-plt.xlabel('Distância da face do tubo de chama (mm)')
+plt.grid()
+plt.ylabel('Fluxo de Massa [kg/s]')
+plt.xlabel('Comprimento da Câmara de Combustão [mm]')
+plt.title('Fluxo de Massa por Zona')
 plt.legend()
 plt.show()
+
+T_max = 1100
+
+Tw1, Tw2, epsilon_g, Re, m_esp_flui, v_fluid, D_flux_tb, mi_fluid, x = sp.symbols(
+    'Tw1, Tw2, epsilon_g, Re, m_esp_flui , v_fluid , D_flux_tb,  mi_fluid,x')
+
+lb = 0.9 * D_ft_maior
+
+# Re = (m_esp_flui * v_fluid * D_flux_tb) / mi_fluid
+
+# # m_esp_flui => massa especifica do fluido
+# # v_fluid => velocidade media do fluido
+# # D_flux_tb => diametro para o fluxo do tubo
+# # mi_fluid => viscosidade dinamica do fluido
+
+# m = 0.0283 * sp.Pow(Re, (-0.2))
+
+L = 1.7
+q = air_zp_percent  # DUVIDA
+
+
+epsilon_w = 0.7  # Adotado o Nimonic(Aluminio) como material da parede
+
+sigma = 5.67*10**(-8)  # Boltzmann
+
+kw = 26  # [W/m.K] Condutividade termica do material
+tw = 0.0005  # espessura parede
+
+D_an = 2 * (D_ref_maior-D_ft_maior)  # Tg ITA
+A_an = (A_ref_maior - A_ft_maior)
+
+
+Tw_in = np.zeros(len(x_t))
+
+for i in range(50):
+    epsilon_g = (1 - sp.exp(-0.29 * P3_EM * L *
+                 ((q * lb)**(0.5)) * ((Tg[i])**(-1.5))))
+
+    mi_ar = (0.03863 + 0.00749*T3_EM - 5.8564*(10**-6)*(T3_EM**2) +
+             2.7769*(10**-9)*(T3_EM**3) - 4.600774*(10**-13)*(T3_EM**4))*(10**-5)
+    mi_g = (0.03863 + 0.00749*Tg[i] - 5.8564*(10**-6)*(Tg[i]**2) + 2.7769 *
+            (10**-9)*(Tg[i]**3) - 4.600774*(10**-13)*(Tg[i]**4))*(10**-5)
+
+    kg = (5.92657 * 10**(-4)) + (9.80957 * 10**(-5)) * Tg[i] * (-4.89398 *
+                                                                10 ** (-8)) * (Tg[i] ** 2) + 1.5011410 * 10**(-11) * Tg[i] ** 3
+    ka = ((5.92657 * 10**(-4)) + (9.80957 * 10**(-5)) * T3_EM -
+          (4.89398 * 10**(-8)) * (T3_EM ** 2) + 1.5011410 * 10**(-11)*(T3_EM ** 3))
+
+    R1 = (0.5 * sigma * (1 + epsilon_w) * epsilon_g *
+          (Tg[i]**1.5) * ((Tg[i]**2.5)-(Tw1**2.5)))
+    R2 = (0.6 * sigma * (Tw2 ** 4 - T3_EM**4))  # Adotado para o alunimio
+    K_12 = (kw/tw)*(Tw1 - Tw2)
+
+    C1 = (0.02 * (kg / (D_ft_maior ** 0.2)) *
+          ((mg[i] / (A_ft_maior * mi_g))**0.8) * (Tg[i] - Tw1))
+    C1_zp = (0.017 * (kg / (D_ft_maior ** 0.2)) *
+             ((mg[i] / (A_ft_maior * mi_g))**0.8) * (Tg[i] - Tw1))
+    C2 = (0.02 * (ka / (D_an ** 0.2)) *
+          ((m_an[i] / (A_an * mi_ar))**0.8) * (Tw2-T3_EM))
+
+    eq = [R1 + C1 - K_12, R2 + C2 - K_12]
+    Tw_ext = sp.nsolve(eq, (Tw1, Tw2), (1100, 50))
+
+    Tw_in[i] = Tw_ext[0]
+
+    print("🐍 File: projeto-combustao/main.py | Line: 473 | undefined ~ Tw_ext", Tw_ext)
+
+Tw_in_smoothed = gaussian_filter1d(Tw_in, sigma=2)
+
+# plt.figure(2, figsize=(12, 7), dpi=80)
+# plt.plot(x_t, Tg_smoothed, 'b')
+# plt.plot(x_t, Tw_in_smoothed, 'r')
+# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+# plt.grid()
+# plt.ylabel('Temperatura (K)')
+# plt.xlabel('Distância da face do tubo de chama (mm)')
+# plt.legend()
+# plt.show()

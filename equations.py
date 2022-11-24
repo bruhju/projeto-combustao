@@ -1,14 +1,11 @@
 import sympy as sp
 import numpy as np
-import pandas as pd
 import math
-import matplotlib.pyplot as plt
-import scipy as spy
 
 
 def A_ref_aerodinamico(R_ar, m_dot_3, T3, P3, perda_pressao_total, fator_perda_pressao):
-    #perda_pressao_total = deltaP3-4/P3
-    #fator_perda_pressao = deltaP3-4/qRef
+    # perda_pressao_total = deltaP3-4/P3
+    # fator_perda_pressao = deltaP3-4/qRef
     A_ref_aero = math.sqrt(R_ar * (math.pow((m_dot_3 * math.sqrt(T3)) / P3, 2))
                            * (fator_perda_pressao / perda_pressao_total))
     return A_ref_aero
@@ -90,7 +87,7 @@ def tg_zr(T_med_zr):
 
 
 def tg_zp(T_out_zp, l_zp, T3, x):
-    tg_zp = ((T_out_zp - T3) * x)/(l_zp+T3)
+    tg_zp = (((T_out_zp - T3) * x)/l_zp)+T3
     return tg_zp
 
 
@@ -100,5 +97,26 @@ def tg_zs(T_out_zp, T_out_zs, l_zs, l_zp, x):
 
 
 def tg_zd(T_out_zs, T_out_zd, l_zd, l_cc, x):
-    tg_zd = ((T_out_zd - T_out_zs)*x)/(l_cc + T_out_zs)
+    tg_zd = (((T_out_zd - T_out_zs)*x)/l_cc)+T_out_zs
     return tg_zd
+
+
+def mg_zr(m_dot_zp):
+    mg_zr = (3/4)*m_dot_zp
+    return mg_zr
+
+
+def mg_zp(mg_zr, m_dot_zp, l_zp, l_zr, i):
+    mg_zp = mg_zr + ((m_dot_zp - mg_zr)*(i - l_zr)/(l_zp - l_zr))
+
+    return mg_zp
+
+
+def mg_zs(m_dot_zs, mg_zp, l_zp, l_zs, i):
+    mg_zs = mg_zp + (((m_dot_zs - mg_zp)*(i - l_zp))/l_zs)
+    return mg_zs
+
+
+def mg_zd(mg_zs, m_dot_zd, l_zp, l_zs, l_zd, i):
+    mg_zd = mg_zs + (m_dot_zd-mg_zs)*(i-(l_zp+l_zs)/l_zd)
+    return mg_zd
