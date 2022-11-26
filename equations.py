@@ -120,3 +120,21 @@ def mg_zs(m_dot_zs, mg_zp, l_zp, l_zs, i):
 def mg_zd(mg_zs, m_dot_zd, l_zp, l_zs, l_zd, i):
     mg_zd = mg_zs + (((m_dot_zd-mg_zs)*(i-(l_zp+l_zs)))/l_zd)
     return mg_zd
+
+
+def A_f(D_ref, D_ft, s):
+    A_f = (2 * math.pi() * s * (D_ref + D_ft))
+    return A_f
+
+
+def m_f(m_an, A_f, A_an):
+    m_f = m_an * (A_f*A_an)
+    return m_f
+
+
+def prd_den_vel_an(m_f, A_f):
+    return m_f / A_f
+
+
+def prd_den_vel_g(mg, A_ft):
+    return mg / A_ft

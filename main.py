@@ -381,7 +381,6 @@ for i in x_t:
 
     if i > l_zp and i <= l_zp+l_zs:
         mg_zs = eq.mg_zs(m_dot_zs, mg_zp, l_zp, l_zs, i)
-        print("🐍 File: projeto-combustao/main.py | Line: 381 | undefined ~ mg_zp, mg_zs", mg_zp, " ", mg_zs)
         mg[index] = mg_zs
         m_an[index] = m3_EM - mg_zs
 
@@ -396,42 +395,34 @@ mg_smoothed = gaussian_filter1d(mg, sigma=1)
 m_an_smoothed = gaussian_filter1d(m_an, sigma=2)
 
 
-# plt.figure(2, figsize=(12, 7), dpi=80)
-# plt.plot(x_t, mg_smoothed, 'r')
+plt.figure(2, figsize=(12, 7), dpi=80)
+plt.plot(x_t, mg_smoothed, 'r')
+plt.plot(x_t, m_an_smoothed, 'r')
 
-# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-# plt.vlines(l_zr, 0, 18, colors='b', linestyles='--',
-#            label='Limite Zona de Recirculação')
-# plt.vlines((l_zp), 0, 18, colors='g',
-#            linestyles='--', label='Limite Zona Primária')
-# plt.vlines((l_zp+l_zs), 0, 18, colors='r',
-#            linestyles='--', label='Limite Zona Secundária')
-# plt.vlines((l_cc), 0, 18, colors='m',
-#            linestyles='--', label='Limite Zona de Diluição')
-# plt.grid()
-# plt.ylabel('Fluxo de Massa [kg/s]')
-# plt.xlabel('Comprimento da Câmara de Combustão [mm]')
-# plt.title('Fluxo de Massa por Zona')
-# plt.legend()
+plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+plt.vlines(l_zr, 0, 18, colors='b', linestyles='--',
+           label='Limite Zona de Recirculação')
+plt.vlines((l_zp), 0, 18, colors='g',
+           linestyles='--', label='Limite Zona Primária')
+plt.vlines((l_zp+l_zs), 0, 18, colors='r',
+           linestyles='--', label='Limite Zona Secundária')
+plt.vlines((l_cc), 0, 18, colors='m',
+           linestyles='--', label='Limite Zona de Diluição')
+plt.grid()
+plt.ylabel('Fluxo de Massa [kg/s]')
+plt.xlabel('Comprimento da Câmara de Combustão [mm]')
+plt.title('Fluxo de Massa por Zona')
+plt.legend()
 # plt.show()
 
 T_max = 1100
 
-Tw1, Tw2, epsilon_g, Re, m_esp_flui, v_fluid, D_flux_tb, mi_fluid, x = sp.symbols(
-    'Tw1, Tw2, epsilon_g, Re, m_esp_flui , v_fluid , D_flux_tb,  mi_fluid,x')
+Tw1, Tw2, x = sp.symbols('Tw1, Tw2,x')
 
 lb = 0.9 * D_ft_maior
 
-# Re = (m_esp_flui * v_fluid * D_flux_tb) / mi_fluid
 
-# # m_esp_flui => massa especifica do fluido
-# # v_fluid => velocidade media do fluido
-# # D_flux_tb => diametro para o fluxo do tubo
-# # mi_fluid => viscosidade dinamica do fluido
-
-# m = 0.0283 * sp.Pow(Re, (-0.2))
-
-L = 1.7
+L = 1.7  # definido pelo professor
 q = air_zp_percent  # DUVIDA
 
 
@@ -474,24 +465,55 @@ for i in range(len(x_t)):
     C2 = (0.02 * (ka / (D_an ** 0.2)) *
           ((m_an[i] / (A_an * mi_ar))**0.8) * (Tw2-T3_EM))
 
-    eq = [R1 + C1 - K_12, R2 + C2 - K_12]
+    if i <= l_zp:
+        eq = [R1 + C1_zp - K_12, R2 + C2 - K_12]
+    else:
+        eq = [R1 + C1 - K_12, R2 + C2 - K_12]
+
     Tw_ext = sp.nsolve(eq, (Tw1, Tw2), (1100, 50))
 
     Tw_in[i] = Tw_ext[0]
-    print(
-        "🐍 File: projeto-combustao/main.py | Line: 481 | undefined ~ Tw_ext[0]", Tw_ext[0])
 
-print("🐍 File: projeto-combustao/main.py | Line: 473 | undefined ~ Tw_ext", len(Tw_ext))
 
 Tw_in_smoothed = gaussian_filter1d(Tw_in, sigma=2)
-print("🐍 File: projeto-combustao/main.py | Line: 485 | undefined ~ Tw_in", len(Tw_in))
+
 
 plt.figure(2, figsize=(12, 7), dpi=80)
 plt.plot(x_t, Tg_smoothed, 'b')
 plt.plot(x_t, Tw_in_smoothed, 'r')
 plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+plt.vlines(l_zr, 800, 2800, colors='b', linestyles='--',
+           label='Limite Zona de Recirculação')
+plt.vlines((l_zp), 800, 2800, colors='g',
+           linestyles='--', label='Limite Zona Primária')
+plt.vlines((l_zp+l_zs), 800, 2800, colors='darkorange',
+           linestyles='--', label='Limite Zona Secundária')
+plt.vlines((l_cc), 800, 2800, colors='m',
+           linestyles='--', label='Limite Zona de Diluição')
+plt.ylim(800, 2800)
 plt.grid()
 plt.ylabel('Temperatura (K)')
 plt.xlabel('Distância da face do tubo de chama (mm)')
 plt.legend()
-plt.show()
+# plt.show()
+
+
+# Filme de resfriamento
+s = 1  # tabela gasturb 335prd_den_vel_an(m_f,A_f)
+pffunciona = np.zeros(len(x_t))
+
+for i in range(len(x_t)):
+    A_f = (2 * 3.1415 * s * (D_ref_maior + D_ft_maior))
+    m_f = m_an[i] * (A_f/A_an)
+    print(
+        "🐍 File: projeto-combustao/main.py | Line: 508 | undefined ~ m_an[i]", m_an[i])
+    print("🐍 File: projeto-combustao/main.py | Line: 508 | undefined ~ (A_f/A_an)", (A_f/A_an))
+
+    product_density_velocity_an = m_f / A_f
+    product_density_velocity_g = mg[i] / A_ft_maior
+
+    mzinho = product_density_velocity_an / product_density_velocity_g
+
+    pffunciona[i] = mzinho
+
+print("🐍 File: projeto-combustao/main.py | Line: 514 | undefined ~ mzinho", pffunciona)
