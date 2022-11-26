@@ -396,25 +396,24 @@ mg_smoothed = gaussian_filter1d(mg, sigma=1)
 m_an_smoothed = gaussian_filter1d(m_an, sigma=2)
 
 
-plt.figure(2, figsize=(12, 7), dpi=80)
-plt.plot(x_t, mg_smoothed, 'r')
+# plt.figure(2, figsize=(12, 7), dpi=80)
+# plt.plot(x_t, mg_smoothed, 'r')
 
-plt.plot(x_t, m_an_smoothed, 'r')
-plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-plt.vlines(l_zr, 0, 18, colors='b', linestyles='--',
-           label='Limite Zona de Recirculação')
-plt.vlines((l_zp), 0, 18, colors='g',
-           linestyles='--', label='Limite Zona Primária')
-plt.vlines((l_zp+l_zs), 0, 18, colors='r',
-           linestyles='--', label='Limite Zona Secundária')
-plt.vlines((l_cc), 0, 18, colors='m',
-           linestyles='--', label='Limite Zona de Diluição')
-plt.grid()
-plt.ylabel('Fluxo de Massa [kg/s]')
-plt.xlabel('Comprimento da Câmara de Combustão [mm]')
-plt.title('Fluxo de Massa por Zona')
-plt.legend()
-plt.show()
+# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+# plt.vlines(l_zr, 0, 18, colors='b', linestyles='--',
+#            label='Limite Zona de Recirculação')
+# plt.vlines((l_zp), 0, 18, colors='g',
+#            linestyles='--', label='Limite Zona Primária')
+# plt.vlines((l_zp+l_zs), 0, 18, colors='r',
+#            linestyles='--', label='Limite Zona Secundária')
+# plt.vlines((l_cc), 0, 18, colors='m',
+#            linestyles='--', label='Limite Zona de Diluição')
+# plt.grid()
+# plt.ylabel('Fluxo de Massa [kg/s]')
+# plt.xlabel('Comprimento da Câmara de Combustão [mm]')
+# plt.title('Fluxo de Massa por Zona')
+# plt.legend()
+# plt.show()
 
 T_max = 1100
 
@@ -449,7 +448,7 @@ A_an = (A_ref_maior - A_ft_maior)
 
 Tw_in = np.zeros(len(x_t))
 
-for i in range(50):
+for i in range(len(x_t)):
     epsilon_g = (1 - sp.exp(-0.29 * P3_EM * L *
                  ((q * lb)**(0.5)) * ((Tg[i])**(-1.5))))
 
@@ -479,10 +478,13 @@ for i in range(50):
     Tw_ext = sp.nsolve(eq, (Tw1, Tw2), (1100, 50))
 
     Tw_in[i] = Tw_ext[0]
+    print(
+        "🐍 File: projeto-combustao/main.py | Line: 481 | undefined ~ Tw_ext[0]", Tw_ext[0])
 
-    print("🐍 File: projeto-combustao/main.py | Line: 473 | undefined ~ Tw_ext", Tw_ext)
+print("🐍 File: projeto-combustao/main.py | Line: 473 | undefined ~ Tw_ext", len(Tw_ext))
 
 Tw_in_smoothed = gaussian_filter1d(Tw_in, sigma=2)
+print("🐍 File: projeto-combustao/main.py | Line: 485 | undefined ~ Tw_in", len(Tw_in))
 
 plt.figure(2, figsize=(12, 7), dpi=80)
 plt.plot(x_t, Tg_smoothed, 'b')
