@@ -137,4 +137,4 @@ def prd_den_vel_an(m_f, A_f):
 
 
 def prd_den_vel_g(mg, A_ft):
-    return mg / A_ft
+    return m_f / A_ft

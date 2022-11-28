@@ -52,8 +52,9 @@ def print_areas(A_ref_aero_EM, A_ref_aero_MA, A_ref_aero_CRU, A_ref_aero_IDLE, A
     print('\n', areasDF, '\n')
 
 
-def print_comprimentos(l_zp, l_zs, l_zd, l_cc):
-    comprimentosDF = pd.DataFrame({'Comprimentos': [l_zp, l_zs, l_zd, l_cc]})
-    comprimentosDF.index = ['Zona Primaria',
+def print_comprimentos(l_zr, l_zp, l_zs, l_zd, l_cc):
+    comprimentosDF = pd.DataFrame(
+        {'Comprimentos': [l_zr, l_zp, l_zs, l_zd, l_cc]})
+    comprimentosDF.index = ['Zona Recirculacao', 'Zona Primaria',
                             "Zona Secundaria", "Zona Diluicao", "CC"]
     print('\n', comprimentosDF, '\n')
