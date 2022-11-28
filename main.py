@@ -181,38 +181,69 @@ l_cc = l_zp + l_zs + l_zd
 
 printer.print_comprimentos(l_zr, l_zp, l_zs, l_zd, l_cc)
 
-# Calculos difusor
+# CÁLCULOS DIFUSOR
 
-# Eq. 26
-A3 = 0.096 / 1  # saida do compressor/número de combustores anular(1)
-
+# eq. 26
+V3 = 150  # Nova velocidade de entrada
 # eq. 22
-V3 = (m3_EM * T3_EM * R_ar2)/(A3 * P3_EM)
-print('Velocidade de entrada: ', V3)
+A3 = (m3_EM * T3_EM * R_ar2)/(V3 * P3_EM)
 
-# condicional
-if V3 < 150:
-    print("Não é necessário difusor porque a velocidade de entrada do ar não é superior a 75 m/s")
+# eq. 25
+A_an = A_ref_maior - A_ft_maior
+
+m_dot_an = m3_EM - (3/4*m_dot_zp)
+
+# eq. 24
+A0 = m3_EM * A_an/m_dot_an
+
+
+# eq. 27
+AR = A0 / A3
+
+# eq. 3.22
+# A0=(a^2+2ab+2ac+b^2+2bc+c^2)-(a^2+2ab-2ac+b^2-2bc+c^2)
+D0 = A0/(3.14159*(D_int+D_ref_maior))
+
+
+# eq. 3.23
+# A0=(a^2+2ab+2ac+b^2+2bc+c^2)-(a^2+2ab-2ac+b^2-2bc+c^2)=> A0=4ac+4bc=4D3*(Dint+Dref) => A0*()
+D3 = A3/(3.14159*(D_int+D_ref_maior))
+
+
+# CONSIDERANDO A PERDA DE PRESSÃO DO DIFUSOR = 1% = dPdif/P3 - 3.25 (Filipe)
+tan_phi = math.pow((0.01*(A3**2)) /
+                   (1.75*R_ar2*((m3_EM*(T3_EM**(1/2))/P3_EM)**2)*((1-A3/A0)**2)), 1/1.22)
+
+# 3.26
+L_dif = (D0/2 - D3/2) / (tan_phi)
+
+print('Area de entrada do difusor                   ', A3)
+print('Diâmetro de entrada do difusor              ', D3)
+print('Area de saída do difusor       ', A0)
+print('Diâmetro de saída do difusor  ', D0)
+print('Ângulo do difusor             ', tan_phi*180/3.141516)
+print('Comprimento do difusor           ', L_dif)
 
 
 # CÁLCULOS TURBILHONADOR
 
-# Eq. professor - nmr injetores
+# eq. professor - nmr injetores
 N_inj = round(math.pi * (D_int+D_ref_maior)/D_ft_maior)
 
-# Eq. qtd pás (10 por injetor)
+# eq. qtd pás (10 por injetor)
 N_pas = N_inj * 10
 
-# Eq. 31
+# eq. 31
+l_zr = D_ft_maior / 2
 D_sw = l_zr / 2
 
-# Eq. 32 - para 5% do total no turbilhonador
+# eq. 32 - para 5% do total no turbilhonador
 m_dot_sw = 0.05 * m3_EM
 m_dot_zr = 3 * m_dot_sw
 
-# Eq. 36
-A0 = m3_EM * (A_ref_maior - A_ft_maior) / (m3_EM - (0.5*m_dot_zp))  # Eq. 24
-perda_pressao_entrada = 0.25*math.pow((A_ref_maior/A0), 2)  # Eq. 39
+# eq. 36
+A0 = m3_EM * (A_ref_maior - A_ft_maior) / (m3_EM - (0.5*m_dot_zp))  # eq. 24
+perda_pressao_entrada = 0.25*math.pow((A_ref_maior/A0), 2)  # eq. 39
 perda_pressao_difusor = 0
 perda_pressao_turbilhonador = fator_perda_pressao - \
     perda_pressao_entrada - perda_pressao_difusor
@@ -233,10 +264,8 @@ R_at = D_at/2
 
 print('O número de injetores é             ', N_inj)
 print('O número de pás é                   ', N_pas)
-print('O comprimento da ZR é               ', l_zr)
 print('O diâmetro do turbilhonador é       ', D_sw)
 print('A vazão massica do turbilhonador é  ', m_dot_sw)
-print('A vazão massica da ZR é             ', m_dot_zr)
 print('A área do turbilhonador é           ', A_sw)
 print('A área corrigida do turbilhonador é ', A_sw_corrigido)
 print('O diâmetro do atomizador é          ', D_at)
@@ -360,31 +389,26 @@ for i in x_t:
 
     index = index + 1
 
-print("\n🐍 File: projeto-combustao/main.py | Line: 336 | undefined ~ countzr", countzr)
-print("🐍 File: projeto-combustao/main.py | Line: 338 | undefined ~ countzp", countzp)
-print("🐍 File: projeto-combustao/main.py | Line: 340 | undefined ~ countzs", countzs)
-print("🐍 File: projeto-combustao/main.py | Line: 342 | undefined ~ countzd\n", countzd)
-
 
 Tg_smoothed = gaussian_filter1d(Tg, sigma=2)
 
-# plt.figure(2, figsize=(12, 7), dpi=80)
-# plt.plot(x_t, Tg_smoothed, 'r')
-# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-# plt.grid()
-# plt.vlines(l_zr, 1000, 2900, colors='b', linestyles='--',
-#            label='Limite Zona de Recirculação')
-# plt.vlines((l_zp), 1000, 2900, colors='g',
-#            linestyles='--', label='Limite Zona Primária')
-# plt.vlines((l_zp+l_zs), 1000, 2900, colors='r',
-#            linestyles='--', label='Limite Zona Secundária')
-# plt.vlines((l_cc), 1000, 2900, colors='m',
-#            linestyles='--', label='Limite Zona de Diluição')
-# plt.ylim(1000, 2900)
-# plt.ylabel('Temperatura (K)')
-# plt.xlabel('Distância da face do tubo de chama (mm)')
-# plt.legend()
-# plt.show()
+plt.figure(2, figsize=(12, 7), dpi=80)
+plt.plot(x_t, Tg_smoothed, 'r')
+plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+plt.grid()
+plt.vlines(l_zr, 1000, 2900, colors='b', linestyles='--',
+           label='Limite Zona de Recirculação')
+plt.vlines((l_zp), 1000, 2900, colors='g',
+           linestyles='--', label='Limite Zona Primária')
+plt.vlines((l_zp+l_zs), 1000, 2900, colors='r',
+           linestyles='--', label='Limite Zona Secundária')
+plt.vlines((l_cc), 1000, 2900, colors='m',
+           linestyles='--', label='Limite Zona de Diluição')
+plt.ylim(1000, 2900)
+plt.ylabel('Temperatura (K)')
+plt.xlabel('Distância da face do tubo de chama (mm)')
+plt.legend()
+plt.show()
 
 
 #   Fluxo de massas
@@ -431,25 +455,25 @@ mg_smoothed = gaussian_filter1d(mg, sigma=1)
 m_an_smoothed = gaussian_filter1d(m_an, sigma=2)
 
 
-# plt.figure(2, figsize=(12, 7), dpi=80)
-# plt.plot(x_t, mg_smoothed, 'r')
-# plt.plot(x_t, m_an_smoothed, 'r')
+plt.figure(2, figsize=(12, 7), dpi=80)
+plt.plot(x_t, mg_smoothed, 'r')
+plt.plot(x_t, m_an_smoothed, 'r')
 
-# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-# plt.vlines(l_zr, 0, 18, colors='b', linestyles='--',
-#            label='Limite Zona de Recirculação')
-# plt.vlines((l_zp), 0, 18, colors='g',
-#            linestyles='--', label='Limite Zona Primária')
-# plt.vlines((l_zp+l_zs), 0, 18, colors='r',
-#            linestyles='--', label='Limite Zona Secundária')
-# plt.vlines((l_cc), 0, 18, colors='m',
-#            linestyles='--', label='Limite Zona de Diluição')
-# plt.grid()
-# plt.ylabel('Fluxo de Massa [kg/s]')
-# plt.xlabel('Comprimento da Câmara de Combustão [mm]')
-# plt.title('Fluxo de Massa por Zona')
-# plt.legend()
-# plt.show()
+plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+plt.vlines(l_zr, 0, 18, colors='b', linestyles='--',
+           label='Limite Zona de Recirculação')
+plt.vlines((l_zp), 0, 18, colors='g',
+           linestyles='--', label='Limite Zona Primária')
+plt.vlines((l_zp+l_zs), 0, 18, colors='r',
+           linestyles='--', label='Limite Zona Secundária')
+plt.vlines((l_cc), 0, 18, colors='m',
+           linestyles='--', label='Limite Zona de Diluição')
+plt.grid()
+plt.ylabel('Fluxo de Massa [kg/s]')
+plt.xlabel('Comprimento da Câmara de Combustão [mm]')
+plt.title('Fluxo de Massa por Zona')
+plt.legend()
+plt.show()
 
 T_max = 1100
 
@@ -522,30 +546,31 @@ for i in range(len(x_t)):
 Tw_in_smoothed = gaussian_filter1d(Tw_in, sigma=2)
 
 
-# plt.figure(2, figsize=(12, 7), dpi=80)
-# plt.plot(x_t, Tg_smoothed, 'b')
-# plt.plot(x_t, Tw_in_smoothed, 'r')
-# plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
-# plt.vlines(l_zr, 800, 2800, colors='b', linestyles='--',
-#            label='Limite Zona de Recirculação')
-# plt.vlines((l_zp), 800, 2800, colors='g',
-#            linestyles='--', label='Limite Zona Primária')
-# plt.vlines((l_zp+l_zs), 800, 2800, colors='darkorange',
-#            linestyles='--', label='Limite Zona Secundária')
-# plt.vlines((l_cc), 800, 2800, colors='m',
-#            linestyles='--', label='Limite Zona de Diluição')
-# plt.ylim(800, 2800)
-# plt.grid()
-# plt.ylabel('Temperatura (K)')
-# plt.xlabel('Distância da face do tubo de chama (mm)')
-# plt.legend()
-# plt.show()
+plt.figure(2, figsize=(12, 7), dpi=80)
+plt.plot(x_t, Tg_smoothed, 'b')
+plt.plot(x_t, Tw_in_smoothed, 'r')
+plt.title('Temperatura dos Gases ao Longo do Tubo de Chama')
+plt.vlines(l_zr, 800, 2800, colors='b', linestyles='--',
+           label='Limite Zona de Recirculação')
+plt.vlines((l_zp), 800, 2800, colors='g',
+           linestyles='--', label='Limite Zona Primária')
+plt.vlines((l_zp+l_zs), 800, 2800, colors='darkorange',
+           linestyles='--', label='Limite Zona Secundária')
+plt.vlines((l_cc), 800, 2800, colors='m',
+           linestyles='--', label='Limite Zona de Diluição')
+plt.ylim(800, 2800)
+plt.grid()
+plt.ylabel('Temperatura (K)')
+plt.xlabel('Distância da face do tubo de chama (mm)')
+plt.legend()
+plt.show()
 
 
 # Filme de resfriamento
 s = 0.0001  # tabela gasturb 335prd_den_vel_an(m_f,A_f)
 t = 0.0001
 Tw_in_res = np.zeros(len(x_t))
+
 
 A_f = (2 * 3.1415926535897932384626 * s * (D_ref_maior + D_ft_maior))
 
@@ -607,11 +632,10 @@ for x in range(len(x_t)):
     C2 = (0.02 * (ka / (D_an ** 0.2)) *
           ((m_an[x] / (A_an * mi_ar))**0.8) * (Tw2-T3_EM))
 
-    # if i <= 28:
-    #     eq = [R1 + C1_zp - K_12, R2 + C2 - K_12]
-    # else:
-    #     eq = [R1 + C1 - K_12, R2 + C2 - K_12]
-    eq = [R1 + C1 - K_12, R2 + C2 - K_12]
+    if i <= 28:
+        eq = [R1 + C1_zp - K_12, R2 + C2 - K_12]
+    else:
+        eq = [R1 + C1 - K_12, R2 + C2 - K_12]
 
     Tw_ext_res = sp.nsolve(eq, (Tw1, Tw2), (1100, 50))
 
@@ -758,7 +782,7 @@ Nc_h = np.array([30, 18, 18, 18], dtype=int)  # Números em cada seção
 Dc_h = np.array([(4*Ah_RZ/(math.pi*Nc_h[0]))**0.5, (4*Ah_PZ/(math.pi*Nc_h[1]))**0.5, (4*Ah_SZ /
                                                                                       (math.pi*Nc_h[2]))**0.5, (4*Ah_DZ/(math.pi*Nc_h[3])) ** 0.5])  # Diâmetro de cada furo, em cada fileira
 print(f'Diâmetro total (somados) dos furos (mm):{ Dc_h*10**3}', '\n')
-Pc = np.array([3, 5, 8.5, 18], dtype=int)  # Posição de cada fileira
+Pc = np.array([30, 80, 150, 350], dtype=int)  # Posição de cada fileira
 
 
 # Nh_ext = ((3.1415926535897932384626 *
